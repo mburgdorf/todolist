@@ -107,6 +107,31 @@ def add_new_list():
     return jsonify(new_list), 200
 
 
+# define endpoint for updating and deleting a todo entry
+@app.route('/entry/<entry_id>', methods=['PATCH', 'DELETE'])
+def handle_entry(entry_id):
+    entry = next((e for e in todos if str(e['id']) == entry_id), None)
+    if not entry:
+        abort(404)
+    if request.method == 'PATCH':
+        data = request.get_json(force=True)
+        if not data or (not data.get('name') and not data.get('description')):
+            abort(405)
+        if 'name' in data:
+            entry['name'] = data['name']
+        if 'description' in data:
+            entry['description'] = data['description']
+        return jsonify({
+            'id': str(entry['id']),
+            'name': entry['name'],
+            'description': entry['description'],
+            'list_id': entry['list']
+        }), 200
+    elif request.method == 'DELETE':
+        todos.remove(entry)
+        return '', 200
+
+
 # define endpoint for getting all lists
 @app.route('/lists', methods=['GET'])
 def get_all_lists():
