@@ -45,8 +45,8 @@ def apply_cors_header(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 
-# define endpoint for getting and deleting existing todo lists
-@app.route('/todo-list/<list_id>', methods=['GET', 'DELETE'])
+# define endpoint for getting, deleting and adding entries to existing todo lists
+@app.route('/todo-list/<list_id>', methods=['GET', 'DELETE', 'POST'])
 def handle_list(list_id):
     # find todo list depending on given list id
     list_item = next((l for l in todo_lists if l['id'] == list_id), None)
@@ -71,6 +71,25 @@ def handle_list(list_id):
         print('Deleting todo list...')
         todo_lists.remove(list_item)
         return '', 200
+    elif request.method == 'POST':
+        # add a new entry to the list
+        data = request.get_json(force=True)
+        if not data or not data.get('name'):
+            abort(405)
+        new_entry = {
+            'id': uuid.uuid4(),
+            'name': data['name'],
+            'description': data.get('description', ''),
+            'list': list_id
+        }
+        todos.append(new_entry)
+        print('Adding new entry to list...')
+        return jsonify({
+            'id': str(new_entry['id']),
+            'name': new_entry['name'],
+            'description': new_entry['description'],
+            'list_id': new_entry['list']
+        }), 200
 
 
 # define endpoint for adding a new list
