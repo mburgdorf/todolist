@@ -46,21 +46,26 @@ def apply_cors_header(response):
     return response
 
 # define endpoint for getting and deleting existing todo lists
-@app.route('/list/<list_id>', methods=['GET', 'DELETE'])
+@app.route('/todo-list/<list_id>', methods=['GET', 'DELETE'])
 def handle_list(list_id):
     # find todo list depending on given list id
-    list_item = None
-    for l in todo_lists:
-        if l['id'] == list_id:
-            list_item = l
-            break
+    list_item = next((l for l in todo_lists if l['id'] == list_id), None)
     # if the given list id is invalid, return status code 404
     if not list_item:
         abort(404)
     if request.method == 'GET':
         # find all todo entries for the todo list with the given id
         print('Returning todo list...')
-        return jsonify([i for i in todos if i['list'] == list_id])
+        result = [
+            {
+                'id': str(i['id']),
+                'name': i['name'],
+                'description': i['description'],
+                'list_id': i['list']
+            }
+            for i in todos if i['list'] == list_id
+        ]
+        return jsonify(result), 200
     elif request.method == 'DELETE':
         # delete list with given id
         print('Deleting todo list...')
