@@ -28,12 +28,21 @@
 2. Statische IP konfigurieren (Verbindungsname und IP ggf. anpassen):
 
    ```bash
+   
    sudo nmcli connection modify netplan-eth0 \
-     ipv4.addresses 192.168.24.105/24 \
-     ipv4.method manual
+   ipv4.addresses 192.168.24.105/24 \
+   ipv4.gateway 192.168.24.254 \
+   ipv4.dns "192.168.24.254" \
+   ipv4.method manual
+
    ```
 
 3. Änderung aktivieren:
+   
+   ```bash
+   sudo nmcli connection down netplan-eth0
+   ```
+
 
    ```bash
    sudo nmcli connection up netplan-eth0
