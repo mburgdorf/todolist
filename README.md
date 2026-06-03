@@ -211,13 +211,13 @@ In das Projektverzeichnis wechseln und das Docker-Image erstellen:
 
 ```bash
 cd ~/todolist
-docker image build -t todolist-webapp .
+sudo docker image build -t todolist-webapp .
 ```
 
 ### 6.3 Container starten
 
 ```bash
-docker run -d -p 5000:5000 --name todolist todolist-webapp
+sudo docker run -d -p 5000:5000 --name todolist todolist-webapp
 ```
 
 **Parameter-Erklärung:**
@@ -247,6 +247,8 @@ http://192.168.24.105:5000/
 ---
 
 ## 8. Nützliche Docker-Befehle
+
+#### Gegenbenenfalls muss `sudo` vor den Befehlen ergänzt werden.
 
 | Befehl | Beschreibung |
 |--------|--------------|
