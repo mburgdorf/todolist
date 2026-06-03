@@ -11,7 +11,10 @@
 2. [Benutzer anlegen](#2-benutzer-anlegen)
 3. [SSH-Dienst installieren & konfigurieren](#3-ssh-dienst-installieren--konfigurieren)
 4. [SSH-Zugriff einschränken](#4-ssh-zugriff-einschränken)
-5. [Zusammenfassung](#zusammenfassung)
+5. [Docker installieren & konfigurieren](#5-docker-installieren--konfigurieren)
+6. [Todo-Listen-Anwendung deployen](#6-todo-listen-anwendung-deployen)
+7. [Zugriff auf die API](#7-zugriff-auf-die-api)
+8. [Nützliche Docker-Befehle](#8-nützliche-docker-befehle)
 
 ---
 
@@ -146,3 +149,115 @@ Nur der Benutzer `fernzugriff` soll sich per SSH verbinden dürfen.
 | `fernzugriff` | `12345` | ✅ | ✅ |
 
 Der Server ist nun unter der statischen IP `192.168.24.105` erreichbar. Ausschließlich der Benutzer `fernzugriff` kann sich per SSH verbinden und verfügt über administrative Rechte.
+
+---
+
+## 5. Docker installieren & konfigurieren
+
+### 5.1 System aktualisieren
+
+Vor der Docker-Installation sollten alle Pakete auf den neuesten Stand gebracht werden:
+
+```bash
+sudo apt-get update && sudo apt-get upgrade -y
+```
+
+### 5.2 Docker installieren
+
+```bash
+sudo apt install docker.io -y
+```
+
+### 5.3 Docker-Dienst starten und aktivieren
+
+```bash
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
+
+### 5.4 Installation testen
+
+**Test: Hello-World-Container**
+
+```bash
+sudo docker run hello-world
+```
+
+> **Erwartete Ausgabe:** `Hello from Docker!`
+
+---
+
+## 6. Todo-Listen-Anwendung deployen
+
+### 6.1 Projektdateien auf den Raspberry Pi übertragen
+
+Von deinem **lokalen Windows-PC** aus:
+
+```powershell
+scp Dockerfile server.py specification.yaml fernzugriff@192.168.24.105:~/todolist/
+```
+
+> Die Dateien werden in das Verzeichnis `~/todolist/` auf dem Raspberry Pi kopiert.
+
+### 6.2 Docker-Image bauen
+
+Per SSH auf dem Raspberry Pi einloggen:
+
+```powershell
+ssh fernzugriff@192.168.24.105
+```
+
+In das Projektverzeichnis wechseln und das Docker-Image erstellen:
+
+```bash
+cd ~/todolist
+docker image build -t todolist-webapp .
+```
+
+### 6.3 Container starten
+
+```bash
+docker run -d -p 5000:5000 --name todolist todolist-webapp
+```
+
+**Parameter-Erklärung:**
+- `-d`: Container läuft im Hintergrund (detached mode)
+- `-p 5000:5000`: Port-Weiterleitung (Host:Container)
+- `--name todolist`: Vergabe eines Container-Namens
+- `todolist-webapp`: Name des Images
+
+---
+
+## 7. Zugriff auf die API
+
+Die Todo-Listen-API ist nun von jedem Gerät im Netzwerk erreichbar:
+
+**Basis-URL:**
+```
+http://192.168.24.105:5000/
+```
+
+**Beispiel-Anfrage:**
+
+**Alle Einträge einer Liste abrufen:**
+   ```
+   GET http://192.168.24.105:5000/todo-list/1318d3d1-d979-47e1-a225-dab1751dbe75
+   ```
+
+---
+
+## 8. Nützliche Docker-Befehle
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| `docker ps` | Zeigt laufende Container |
+| `docker ps -a` | Zeigt alle Container (auch gestoppte) |
+| `docker stop todolist` | Stoppt den Container |
+| `docker start todolist` | Startet den Container |
+| `docker restart todolist` | Startet den Container neu |
+| `docker logs todolist` | Zeigt Container-Logs |
+| `docker rm todolist` | Löscht den Container (muss gestoppt sein) |
+| `docker images` | Zeigt alle Images |
+| `docker rmi todolist-webapp` | Löscht das Image |
+
+---
