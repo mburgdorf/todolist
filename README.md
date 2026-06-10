@@ -15,6 +15,7 @@
 6. [Todo-Listen-Anwendung deployen](#6-todo-listen-anwendung-deployen)
 7. [Zugriff auf die API](#7-zugriff-auf-die-api)
 8. [Nützliche Docker-Befehle](#8-nützliche-docker-befehle)
+9. [Bonusaufgabe: Grafana Cloud Monitoring](#bonusaufgabe-server-monitoring-mit-grafana-cloud)
 
 ---
 
@@ -263,3 +264,81 @@ http://192.168.24.105:5000/
 | `docker rmi todolist-webapp` | Löscht das Image |
 
 ---
+
+## Bonusaufgabe: Server-Monitoring mit Grafana Cloud
+
+### Ziel
+
+Den Raspberry Pi mit **Grafana Cloud** überwachen, um Systemressourcen (CPU, RAM, Disk, Netzwerk) in Echtzeit im Browser einsehen zu können.
+
+---
+
+### 9.1 Grafana Cloud Account erstellen
+
+1. Auf [grafana.com](https://grafana.com/) registrieren (E-Mail & Passwort)
+2. E-Mail mit Bestätigungscode verifizieren
+3. Region auswählen → **EU**
+
+---
+
+### 9.2 Grafana Alloy Agent installieren
+
+Im Grafana Cloud Portal den **Getting Started Guide** durchklicken:
+
+1. **„Monitor my OS"** auswählen
+2. Konfiguration:
+   - **Architektur:** `Arm64`
+   - **Plattform:** `Debian`
+3. **Token Name** festlegen → `todolist-webapp-token`
+4. Grafana generiert einen Installations-Befehl – diesen auf dem Raspberry Pi ausführen:
+
+   ```bash
+   ssh fernzugriff@192.168.24.105
+   ```
+
+   ```bash
+   # Den von Grafana generierten Befehl hier einfügen und ausführen
+   # (enthält API-Key und Endpoint – nicht öffentlich teilen!)
+   ```
+
+> **Hinweis:** Der generierte Befehl installiert den **Grafana Alloy Agent**, der Metriken sammelt und an Grafana Cloud sendet.
+
+---
+
+### 9.3 Verbindung testen
+
+Nach Abschluss der Installation im Grafana Cloud Portal auf **„Test Connection"** klicken.
+
+✅ Bei erfolgreicher Verbindung wird der Raspberry Pi als Datenquelle erkannt.
+
+---
+
+### 9.4 Dashboard einrichten
+
+1. Im Portal ein vorkonfiguriertes Dashboard auswählen
+2. Gewählt: **„CPU & System"**
+3. Das Dashboard zeigt u. a.:
+   - CPU-Auslastung (User, System, Idle)
+   - Arbeitsspeicher-Nutzung
+   - Festplatten-I/O
+   - System-Uptime
+
+**Screenshot des Dashboards:**
+
+![Grafana Dashboard – CPU & System](grafana_dashboard.png)
+
+---
+
+### 9.5 Alloy Agent Status prüfen
+
+Falls die Verbindung nicht funktioniert, kann der Agent-Status geprüft werden:
+
+```bash
+sudo systemctl status alloy
+```
+
+Neustart des Agents:
+
+```bash
+sudo systemctl restart alloy
+```
