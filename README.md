@@ -447,3 +447,31 @@ sudo systemctl restart docker
 ```
 
 > **Achtung:** Nach dieser Änderung übernimmt ufw die volle Kontrolle über den Docker-Traffic. Sicherstellen, dass Port `5000` in ufw freigegeben ist, bevor Docker neu gestartet wird.
+
+---
+
+### 10.6 Firewall mit nmap testen
+
+Von einem anderen Gerät im Netzwerk (z. B. dem eigenen PC) mit `nmap` prüfen, welche Ports offen oder blockiert sind:
+
+```bash
+nmap -p 22,5000,80,443 192.168.24.105
+```
+
+Erwartete Ausgabe:
+
+```
+PORT     STATE    SERVICE
+22/tcp   open     ssh
+5000/tcp open     upnp
+80/tcp   filtered http
+443/tcp  filtered https
+```
+
+| Status | Bedeutung |
+|--------|-----------|
+| `open` | Port ist erreichbar – Dienst läuft und ufw erlaubt den Zugriff |
+| `filtered` | Port wird von ufw blockiert |
+| `closed` | ufw lässt den Port durch, aber kein Dienst hört dort zu |
+
+✅ Wenn Port `22` und `5000` als `open` und alle anderen als `filtered` angezeigt werden, ist die Firewall korrekt konfiguriert.
