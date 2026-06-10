@@ -15,7 +15,8 @@
 6. [Todo-Listen-Anwendung deployen](#6-todo-listen-anwendung-deployen)
 7. [Zugriff auf die API](#7-zugriff-auf-die-api)
 8. [Nützliche Docker-Befehle](#8-nützliche-docker-befehle)
-9. [Bonusaufgabe: Grafana Cloud Monitoring](#bonusaufgabe-server-monitoring-mit-grafana-cloud)
+9. [Bonusaufgabe 1: Grafana Cloud Monitoring](#bonusaufgabe-server-monitoring-mit-grafana-cloud)
+10. [Bonusaufgabe 2: Firewall mit ufw](#bonusaufgabe-2-firewall-mit-ufw)
 
 ---
 
@@ -342,3 +343,107 @@ Neustart des Agents:
 ```bash
 sudo systemctl restart alloy
 ```
+
+---
+
+## Bonusaufgabe 2: Firewall mit ufw
+
+### Ziel
+
+Den Server nach dem **Whitelist-Prinzip** absichern: Alles wird blockiert, nur explizit erlaubte Ports dürfen passieren.
+
+### Benötigte Ports
+
+| Dienst | Port | Protokoll | Richtung |
+|--------|------|-----------|----------|
+| SSH | `22` | TCP | eingehend |
+| Todo-API (Docker) | `5000` | TCP | eingehend |
+| Grafana Alloy | – | – | nur ausgehend, kein Port nötig |
+
+---
+
+### 10.1 ufw installieren
+
+```bash
+sudo apt update
+sudo apt install ufw -y
+```
+
+---
+
+### 10.2 Standardregeln setzen (Whitelist-Prinzip)
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+```
+
+> Damit wird **jede eingehende Verbindung blockiert**, sofern sie nicht explizit erlaubt wird.
+
+---
+
+### 10.3 Ausnahmen für notwendige Dienste
+
+**SSH (Port 22):**
+```bash
+sudo ufw allow 22/tcp
+```
+
+**Todo-API (Port 5000):**
+```bash
+sudo ufw allow 5000/tcp
+```
+
+---
+
+### 10.4 Firewall aktivieren
+
+```bash
+sudo ufw enable
+```
+
+> Bei der Abfrage mit **Y** bestätigen.
+
+Status prüfen:
+
+```bash
+sudo ufw status verbose
+```
+
+✅ Erwartete Ausgabe:
+```
+Status: active
+Default: deny (incoming), allow (outgoing)
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere
+5000/tcp                   ALLOW IN    Anywhere
+```
+
+---
+
+### 10.5 Docker und ufw
+
+**Ausgangssituation:** Docker manipuliert `iptables` direkt und **umgeht dabei ufw-Regeln**. Ein per Docker freigegebener Port ist auch dann von außen erreichbar, wenn ufw ihn nicht explizit erlaubt.
+
+**Lösung:** In `/etc/docker/daemon.json` eintragen, dass Docker die `iptables`-Regeln nicht selbst verwaltet:
+
+```bash
+sudo nano /etc/docker/daemon.json
+```
+
+Folgenden Inhalt einfügen (oder ergänzen):
+
+```json
+{
+  "iptables": false
+}
+```
+
+Danach Docker neu starten:
+
+```bash
+sudo systemctl restart docker
+```
+
+> **Achtung:** Nach dieser Änderung übernimmt ufw die volle Kontrolle über den Docker-Traffic. Sicherstellen, dass Port `5000` in ufw freigegeben ist, bevor Docker neu gestartet wird.
