@@ -1,18 +1,18 @@
 # Dockerfile
-# Basisimage für Python-Anwendungen herunterladen
+# Download base image for Python applications
 FROM python:3.8-alpine
 
-# Notwendige Bibliotheken installieren
+# Install necessary libraries
 RUN pip install flask
 
-# Arbeitsverzeichnis im Container wechseln
+# Change working directory in the container
 WORKDIR /app
 
-# Kopiere lokale Dateien in das Container-Image
+# Copy local files into the container image
 COPY server.py /app
 COPY specification.yaml /app
 
-# Konfiguriere den Befehl, der im Container ausgeführt werden soll 
-# (Anwendung Python + Skriptname als Parameter)
+# Configure the command to be executed in the container
+# (Python application + script name as parameter)
 ENTRYPOINT [ "python" ]
 CMD ["server.py"]
