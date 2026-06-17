@@ -24,6 +24,8 @@
 
 ## 0. SSH-Verbindung zum Server herstellen
 
+> **Hinweis:** Dieser Schritt setzt voraus, dass die Schritte 1–5 bereits abgeschlossen sind. Er beschreibt, wie nach der Einrichtung auf den Server zugegriffen wird.
+
 ### Voraussetzung: Richtiges WLAN
 
 Bevor eine SSH-Verbindung möglich ist, muss das Gerät im **WLAN `R324-Public`** eingeloggt sein. Nur Geräte in diesem Netzwerk können den Server unter der IP `192.168.24.105` erreichen.
@@ -124,6 +126,8 @@ sudo adduser fernzugriff
 
 - Passwort vergeben (in unserem Fall: `12345`)
 - Dem Dialog folgen und am Ende mit **Y** bestätigen
+
+> **Sicherheitshinweis:** Die hier verwendeten Passwörter sind Beispielwerte für die Schulumgebung. In einer Produktivumgebung sind ausschließlich starke, einzigartige Passwörter zu verwenden.
 
 ### 2.3 Sudo-Rechte für `fernzugriff` vergeben
 
@@ -241,13 +245,19 @@ sudo docker run hello-world
 
 ### 6.1 Projektdateien auf den Raspberry Pi übertragen
 
-Von deinem **lokalen Windows-PC** aus:
+Das Repository direkt auf dem Raspberry Pi klonen (per SSH eingeloggt):
+
+```bash
+git clone https://github.com/mburgdorf/todolist ~/todolist
+```
+
+> Die Dateien werden in das Verzeichnis `~/todolist/` geklont. Git muss auf dem Raspberry Pi installiert sein (`sudo apt install git -y`).
+
+Alternativ können die Dateien von einem **lokalen Windows-PC** per `scp` übertragen werden:
 
 ```powershell
 scp Dockerfile server.py specification.yaml fernzugriff@192.168.24.105:~/todolist/
 ```
-
-> Die Dateien werden in das Verzeichnis `~/todolist/` auf dem Raspberry Pi kopiert.
 
 ### 6.2 Docker-Image bauen
 
