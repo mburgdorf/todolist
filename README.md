@@ -7,6 +7,7 @@
 
 ## Inhaltsverzeichnis
 
+0. [SSH-Verbindung zum Server herstellen](#0-ssh-verbindung-zum-server-herstellen)
 1. [Statische IP festlegen](#1-statische-ip-festlegen)
 2. [Benutzer anlegen](#2-benutzer-anlegen)
 3. [SSH-Dienst installieren & konfigurieren](#3-ssh-dienst-installieren--konfigurieren)
@@ -18,6 +19,52 @@
 9. [Bonusaufgabe 1: Grafana Cloud Monitoring](#bonusaufgabe-server-monitoring-mit-grafana-cloud)
 10. [Bonusaufgabe 2: Firewall mit ufw](#bonusaufgabe-2-firewall-mit-ufw)
 11. [Bonusaufgabe 3: Reverse-Proxy mit Caddy](#bonusaufgabe-3-reverse-proxy-mit-caddy)
+
+---
+
+## 0. SSH-Verbindung zum Server herstellen
+
+### Voraussetzung: Richtiges WLAN
+
+Bevor eine SSH-Verbindung möglich ist, muss das Gerät im **WLAN `R324-Public`** eingeloggt sein. Nur Geräte in diesem Netzwerk können den Server unter der IP `192.168.24.105` erreichen.
+
+> **Hinweis:** Über andere Netzwerke (z. B. Mobilfunk oder andere WLAN-Netze) ist der Server **nicht erreichbar**.
+
+---
+
+### Verbindung herstellen
+
+Das Terminal öffnen (unter Windows: **PowerShell** oder **Eingabeaufforderung**) und folgenden Befehl eingeben:
+
+```powershell
+ssh fernzugriff@192.168.24.105
+```
+
+Beim ersten Verbindungsaufbau erscheint eine Sicherheitsabfrage:
+
+```
+The authenticity of host '192.168.24.105' can't be established.
+...
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+Mit `yes` bestätigen. Anschließend das Passwort eingeben:
+
+```
+Passwort: 12345
+```
+
+> **Hinweis:** Das Passwort wird beim Eingeben nicht angezeigt – das ist normal.
+
+Nach erfolgreicher Anmeldung erscheint der Server-Prompt und Befehle können direkt auf dem Raspberry Pi ausgeführt werden.
+
+---
+
+### Verbindung beenden
+
+```bash
+exit
+```
 
 ---
 
