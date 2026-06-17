@@ -17,6 +17,7 @@
 8. [Nützliche Docker-Befehle](#8-nützliche-docker-befehle)
 9. [Bonusaufgabe 1: Grafana Cloud Monitoring](#bonusaufgabe-server-monitoring-mit-grafana-cloud)
 10. [Bonusaufgabe 2: Firewall mit ufw](#bonusaufgabe-2-firewall-mit-ufw)
+11. [Bonusaufgabe 3: Reverse-Proxy mit Caddy](#bonusaufgabe-3-reverse-proxy-mit-caddy)
 
 ---
 
@@ -475,3 +476,131 @@ PORT     STATE    SERVICE
 | `closed` | ufw lässt den Port durch, aber kein Dienst hört dort zu |
 
 ✅ Wenn Port `22` und `5000` als `open` und alle anderen als `filtered` angezeigt werden, ist die Firewall korrekt konfiguriert.
+
+---
+
+## Bonusaufgabe 3: Reverse-Proxy mit Caddy
+
+### Ziel
+
+Einen **Reverse-Proxy** (hier: **Caddy**) vor die Todo-Listen-Anwendung schalten, sodass die Web-App über den Standard-HTTP-Port `80` (und optional HTTPS auf Port `443`) erreichbar ist – ohne den Docker-Port `5000` direkt im Browser eingeben zu müssen.
+
+---
+
+### 11.1 Caddy installieren
+
+Caddy kann direkt über die offizielle Paketquelle installiert werden:
+
+```bash
+sudo apt update
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+  | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+
+sudo apt update
+sudo apt install caddy -y
+```
+
+Installation prüfen:
+
+```bash
+caddy version
+```
+
+---
+
+### 11.2 Caddyfile konfigurieren
+
+Die Konfigurationsdatei von Caddy befindet sich unter `/etc/caddy/Caddyfile`.
+
+```bash
+sudo nano /etc/caddy/Caddyfile
+```
+
+Inhalt ersetzen durch:
+
+```
+:80 {
+    reverse_proxy localhost:5000
+}
+```
+
+**Erklärung:**
+- `:80` – Caddy hört auf Port 80 (HTTP)
+- `reverse_proxy localhost:5000` – Alle Anfragen werden intern an den Docker-Container auf Port 5000 weitergeleitet
+
+---
+
+### 11.3 Caddy-Dienst starten und aktivieren
+
+```bash
+sudo systemctl enable caddy
+sudo systemctl restart caddy
+```
+
+Status prüfen:
+
+```bash
+sudo systemctl status caddy
+```
+
+> Erwartete Ausgabe enthält `enabled` und `active (running)`.
+
+---
+
+### 11.4 ufw-Regel für Port 80 hinzufügen
+
+Damit der Reverse-Proxy von außen erreichbar ist, muss Port `80` in der Firewall freigegeben werden:
+
+```bash
+sudo ufw allow 80/tcp
+```
+
+Firewall-Status prüfen:
+
+```bash
+sudo ufw status verbose
+```
+
+✅ Erwartete Ausgabe (zusätzlich zu den bereits bestehenden Regeln):
+```
+80/tcp                     ALLOW IN    Anywhere
+```
+
+---
+
+### 11.5 Zugriff testen
+
+Die Todo-API ist nun über Port `80` erreichbar – ohne Portangabe in der URL:
+
+```
+http://192.168.24.105/
+```
+
+**Beispiel-Anfrage:**
+
+```
+GET http://192.168.24.105/todo-list/1318d3d1-d979-47e1-a225-dab1751dbe75
+```
+
+> **Hinweis:** Intern leitet Caddy die Anfrage weiterhin an `localhost:5000` weiter. Der Docker-Container selbst muss weiterhin laufen.
+
+---
+
+### 11.6 Zusammenfassung – Port-Übersicht nach Reverse-Proxy
+
+| Port | Dienst | Erreichbar von außen | Hinweis |
+|------|--------|----------------------|---------|
+| `22` | SSH | ✅ | Direktzugriff |
+| `80` | Caddy (HTTP) | ✅ | Reverse-Proxy zur App |
+| `5000` | Docker (Todo-API) | ❌ | Nur intern von Caddy genutzt |
+
+> **Empfehlung:** Port `5000` in ufw **nicht** mehr von außen freigeben, da der Zugriff nun ausschließlich über Caddy auf Port `80` erfolgen soll:
+>
+> ```bash
+> sudo ufw delete allow 5000/tcp
+> ```
